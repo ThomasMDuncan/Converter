@@ -1,5 +1,7 @@
+from queue import Empty
 from bs4 import BeautifulSoup
 import re
+import os.path
 from openpyxl import Workbook
 import zipfile as z
 from io import BytesIO
@@ -61,7 +63,9 @@ class Converter:
     def clear(self):
         self.__file_name = ""
         self.__extracted_name = ""
+        self.__folder_name = None
         self.xlsx_name = ""
+        self.chosen = False
         self.extract_kmz = 0
 
     def ConvertFolder(self):
@@ -77,63 +81,59 @@ class Converter:
                                 zfiledata = BytesIO(zipf.read(name2))
                                 kml_list.append((zfiledata, name2))
                         zipf.close()
+                elif file.endswith(".zip"):
+                    self.set_file_name(file)
+                    kml_list.append(self.ConvertZip())
+            self.__Convert(kml_list)
+        else:
+            raise ValueError("File Not Supported")
 
     def ConvertFile(self):
-        pass
+        kml_list = []
+        if self.__file_name.split(".")[-1] == "kml":
+            kml_list.append((open(self.__file_name, 'r'), self.__file_name.rsplit("/", 1)[1]))
+            self.__Convert(kml_list)
+        elif self.__file_name.split(".")[-1] == "kmz":
+            with z.ZipFile(self.__file_name, 'r') as zipf:
+                for name2 in zipf.namelist():
+                    if name2.split('.')[-1] == 'kml':
+                        zfiledata = BytesIO(zipf.read(name2))
+                        kml_list.append((zfiledata, name2))
+                zipf.close()
+            self.__Convert(kml_list)
+        else:
+            raise ValueError("File Not Supported")
 
     def ConvertZip(self):
-        pass
+        kml_list = []
+        if self.__file_name.split(".")[-1] == "zip":
+            if self.__folder_name is not None:
+                os.mkdir(self.__folder_name + "/" + self.__file_name.rsplit(".", 1)[0].rsplit("/", 1)[1])
+            else:
+                os.mkdir(self.__file_name.rsplit(".", 1)[0])
+            with z.ZipFile(self.__file_name, 'r') as zfile:
+                for name in zfile.namelist():
+                    if name.split('.')[-1] == 'kmz':
+                        zfiledata = BytesIO(zfile.read(name))
+                        if self.extract_kmz:
+                            zfile.extract(name, self.__file_name.rsplit(".", 1)[0].rsplit("/", 1)[0])
+                        with z.ZipFile(zfiledata) as zfile2:
+                            for name2 in zfile2.namelist():
+                                if name2.split('.')[-1] == 'kml':
+                                    zfiledata2 = BytesIO(zfile2.read(name2))
+                                    kml_list.append((zfiledata2, name2))
+                            zfile2.close()
+                zfile.close()
+            self.__Convert(kml_list)
+        else:
+            raise ValueError("File Not Supported")
 
-    def convert(self):
+    def __Convert(self, kml_list):
         #Should just do this before I call this method
         if not self.FileCheck(self.__file_name):
             return
-
         #Should probably do the folder, file, zip file in a different method and send the convert method the kml_list
-        else:
-            kml_list = []
-            if self.__file_name == "":
-                for file in os.listdir(self.__folder_name):
-                    if file.endswith(".kml"):
-                        kml_list.append((file, file))
-                    elif file.endswith(".kmz"):
-                        with z.ZipFile(self.__folder_name + "/" + file, 'r') as zipf:
-                            for name2 in zipf.namelist():
-                                if name2.split('.')[-1] == 'kml':
-                                    zfiledata = BytesIO(zipf.read(name2))
-                                    kml_list.append((zfiledata, name2))
-                            zipf.close()
-            else:
-                if self.__file_name.split(".")[-1] == "kml":
-                    kml_list.append((open(self.__file_name, 'r'), self.__file_name.rsplit("/", 1)[1]))
-                elif self.__file_name.split(".")[-1] == "kmz":
-                    with z.ZipFile(self.__file_name, 'r') as zipf:
-                        for name2 in zipf.namelist():
-                            if name2.split('.')[-1] == 'kml':
-                                zfiledata = BytesIO(zipf.read(name2))
-                                kml_list.append((zfiledata, name2))
-                        zipf.close()
-                elif self.__file_name.split(".")[-1] == "zip":
-                    if self.__folder_name is not None:
-                        os.mkdir(self.__folder_name + "/" + self.__file_name.rsplit(".", 1)[0].rsplit("/", 1)[1])
-                    else:
-                        os.mkdir(self.__file_name.rsplit(".", 1)[0])
-                    with z.ZipFile(self.__file_name, 'r') as zfile:
-                        for name in zfile.namelist():
-                            if name.split('.')[-1] == 'kmz':
-                                zfiledata = BytesIO(zfile.read(name))
-                                if self.extract_kmz:
-                                    zfile.extract(name, self.__file_name.rsplit(".", 1)[0].rsplit("/", 1)[0])
-                                with z.ZipFile(zfiledata) as zfile2:
-                                    for name2 in zfile2.namelist():
-                                        if name2.split('.')[-1] == 'kml':
-                                            zfiledata2 = BytesIO(zfile2.read(name2))
-                                            kml_list.append((zfiledata2, name2))
-                                    zfile2.close()
-                        zfile.close()
-                else:
-                    raise ValueError("NOT SUpported")
-
+        elif kml_list is not Empty:
             #kml_list will be what I use to update the count each time a file is converted
             for kml_file in kml_list:
                 self.__extracted_name = kml_file[1]
@@ -355,3 +355,5 @@ class Converter:
                 for table in finalSVlist:
                     ws.append(table)
                 wb.save(self.xlsx_name)
+        else:
+            raise ValueError("Error In Conversion")

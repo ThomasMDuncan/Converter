@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import filedialog
 from os import path
 from Converter import Converter
+from threading import *
 
 supported = True
 
@@ -50,6 +51,10 @@ def xlsx_path():
         return path.exists(converter.final_file_name())
     return False
 
+def threading():
+    t1 = Thread(target=convert)
+    t1.start()
+
 def convert():
     if not supported:
         label_status.configure(text="FILE NOT SUPPORTED", fg="red")
@@ -60,7 +65,7 @@ def convert():
         else:
             try:
                 label_status.configure(text="Status: Converting...", fg="blue")
-                converter.convert()
+                converter.ConvertFolder()
                 converter.clear()
                 label_status.configure(text="Conversion Successful, file location: \n" + converter.xlsx_name,
                                        fg="green")
@@ -69,11 +74,22 @@ def convert():
                 # label_file_explorer.configure(text="Error occurred in conversion, email me")
     elif xlsx_path():
         label_status.configure(text="File already exists in chosen directory", fg="red")
-    elif converter.get_file_name().split(".")[-1] in ["kml", "kmz", "zip"]:
+    elif converter.get_file_name().split(".")[-1] in ["kml", "kmz"]:
         label_status.configure(text="Status: Converting...", fg="blue")
         window.update_idletasks()
         try:
-            converter.convert()
+            converter.ConvertFile()
+            converter.clear()
+            label_status.configure(text="Conversion Successful, file location: \n" + converter.xlsx_name,
+                                    fg="green")
+        except:
+            label_status.configure(text="Error in conversion", fg="red")
+            # label_file_explorer.configure(text="Error occurred in conversion, email me")
+    elif converter.get_file_name().split(".")[-1] == "zip":
+        label_status.configure(text="Status: Converting...", fg="blue")
+        window.update_idletasks()
+        try:
+            converter.ConvertZip()
             converter.clear()
             label_status.configure(text="Conversion Successful, file location: \n" + converter.xlsx_name,
                                     fg="green")
@@ -131,7 +147,7 @@ button_folder_reset = Button(browse_frame, text="Reset", command=reset_folder)#.
 
 check_xlsxAndkmz = Checkbutton(buttons_frame, text="xlsx and kmz", width=9, variable=var, onvalue=1, offvalue=0, command=sel)     #.grid(row=0, column=0)
 
-button_run = Button(buttons_frame, text="Convert", width=13, command=convert, justify=LEFT)                #.grid(row=0, column=1)
+button_run = Button(buttons_frame, text="Convert", width=13, command=threading, justify=LEFT)                #.grid(row=0, column=1)
 
 button_exit = Button(buttons_frame, text="Exit", width=13, command=quit, justify=RIGHT)                     #.grid(row=0, column=2)
 
