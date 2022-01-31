@@ -1,10 +1,6 @@
-from tkinter import *
-from tkinter import filedialog
 from bs4 import BeautifulSoup
 import re
 from openpyxl import Workbook
-import os.path
-from os import path
 import zipfile as z
 from io import BytesIO
 
