@@ -70,7 +70,7 @@ def convert():
                 label_status.configure(text="Conversion Successful, file location: \n" + converter.xlsx_name,
                                        fg="green")
             except:
-                label_status.configure(text="Error in conversion", fg="red")
+                label_status.configure(text="Error in conversion at MainUI", fg="red")
                 # label_file_explorer.configure(text="Error occurred in conversion, email me")
     elif xlsx_path():
         label_status.configure(text="File already exists in chosen directory", fg="red")
@@ -83,7 +83,7 @@ def convert():
             label_status.configure(text="Conversion Successful, file location: \n" + converter.xlsx_name,
                                     fg="green")
         except:
-            label_status.configure(text="Error in conversion", fg="red")
+            label_status.configure(text="Error in conversion in MainUI 2", fg="red")
             # label_file_explorer.configure(text="Error occurred in conversion, email me")
     elif converter.get_file_name().split(".")[-1] == "zip":
         label_status.configure(text="Status: Converting...", fg="blue")
@@ -94,7 +94,7 @@ def convert():
             label_status.configure(text="Conversion Successful, file location: \n" + converter.xlsx_name,
                                     fg="green")
         except:
-            label_status.configure(text="Error in conversion", fg="red")
+            label_status.configure(text="Error in conversion in MainUI 3", fg="red")
             # label_file_explorer.configure(text="Error occurred in conversion, email me")
     else:
         label_status.configure(text="File not Compatable", fg="red")
