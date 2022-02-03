@@ -56,8 +56,10 @@ class Converter:
 
     def FileCheck(self, file_name):
         if file_name == "":
+            print('Here 1')
             return True
         try:
+            print('Here 2')
             open(file_name, "r")
             return True
         except IOError:
@@ -167,6 +169,16 @@ class Convert():
         self.xlsx_name = ""
         self.chosen = False
         self.extract_kmz = 0
+
+    def FileCheck(self, file_name):
+        if file_name == "":
+            return True
+        try:
+            open(file_name, "r")
+            return True
+        except IOError:
+            print("Error: File does not exist or is unreadable")
+            return False
         
     def Convert(self, kml_file):
         #Should just do this before I call this method
@@ -175,13 +187,14 @@ class Convert():
             print("Error in filecheck")
             return
         #Should probably do the folder, file, zip file in a different method and send the convert method the kml_list
-        elif kml_file is not None:
+        if kml_file is not None:
             print("inside the convert elif")
             #kml_list will be what I use to update the count each time a file is converted
             self.__extracted_name = kml_file[1]
             self.xlsx_name = self.final_file_name()
             # creating the soup object to parse through and then setting that object to the Points folder we want.
             s = BeautifulSoup(kml_file[0], 'lxml')
+            print('yuhhh??')
             header = []
             for i in s.find_all("folder"):
                 folder = s.folder.extract()
