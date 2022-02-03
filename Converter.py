@@ -117,7 +117,7 @@ class Converter:
             raise ValueError("File Not Supported")
 
     def ConvertFile(self):
-        conv = Convert()
+        conv = Convert(self.__file_name, self.__extracted_name, self.__folder_name, self.xlsx_name, self.chosen, self.extract_kmz)
         if self.__file_name.split(".")[-1] == "kml":
             file = (open(self.__file_name, 'r'), self.__file_name.rsplit("/", 1)[1])
             conv.Convert(file)
@@ -158,14 +158,13 @@ class Converter:
             raise ValueError("File Not Supported")
 
 class Convert():
-    def __init__(self) -> None:
-        self.__file_name = ""
-        self.__extracted_name = ""
-        self.__folder_name = None
-        self.__thread_count = 0
-        self.xlsx_name = ""
-        self.chosen = False
-        self.extract_kmz = 0
+    def __init__(self, file_name, extracted_name, folder_name, xlsx_name, chosen, extract_kmz) -> None:
+        self.__file_name = file_name
+        self.__extracted_name = extracted_name
+        self.__folder_name = folder_name
+        self.xlsx_name = xlsx_name
+        self.chosen = chosen
+        self.extract_kmz = extract_kmz
 
     def FileCheck(self, file_name):
         if file_name == "":
@@ -176,6 +175,27 @@ class Convert():
         except IOError:
             print("Error: File does not exist or is unreadable")
             return False
+
+    def final_file_name(self):
+        xlsx_file_name = ""
+        if self.__folder_name == None:
+            xlsx_file = self.__file_name.rsplit(".", 1)[0].rsplit("/", 1)[1] + ".xlsx"
+            if self.__file_name.rsplit(".", 1)[1] == "zip":
+                xlsx_folder = self.__file_name.rsplit(".", 1)[0] + "/"
+                xlsx_file_name = xlsx_folder + self.__extracted_name.split(".")[0] + ".xlsx"
+            else:
+                xlsx_folder = self.__file_name.rsplit("/", 1)[0] + "/"
+                xlsx_file_name = xlsx_folder + xlsx_file
+        else:
+            if self.__file_name == "":
+                xlsx_file_name = self. __folder_name + "/" + self.__extracted_name.split(".")[0] + ".xlsx"
+            else:
+                xlsx_file = self.__file_name.rsplit(".", 1)[0].rsplit("/", 1)[1] + ".xlsx"
+                if self.__file_name.rsplit(".", 1)[1] == "zip":
+                    xlsx_file_name = self.__folder_name + "/" + self.__file_name.rsplit(".", 1)[0].rsplit("/", 1)[1] + "/" + self.__extracted_name.split(".")[0] + ".xlsx"
+                else:
+                    xlsx_file_name = self.__folder_name + "/" + xlsx_file
+        return xlsx_file_name
         
     def Convert(self, kml_file):
         #Should just do this before I call this method
@@ -189,7 +209,9 @@ class Convert():
             print("inside the convert elif")
             #kml_list will be what I use to update the count each time a file is converted
             self.__extracted_name = kml_file[1]
+            print("DUDUE")
             self.xlsx_name = self.final_file_name()
+            print("BRO????")
             # creating the soup object to parse through and then setting that object to the Points folder we want.
             s = BeautifulSoup(kml_file[0], 'lxml')
             print('yuhhh??')
