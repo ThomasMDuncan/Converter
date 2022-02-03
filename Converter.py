@@ -122,16 +122,13 @@ class Converter:
             file = (open(self.__file_name, 'r'), self.__file_name.rsplit("/", 1)[1])
             conv.Convert(file)
         elif self.__file_name.split(".")[-1] == "kmz":
-            print("start of convertFile")
             file = None
             with z.ZipFile(self.__file_name, 'r') as zipf:
                 for name2 in zipf.namelist():
                     if name2.split('.')[-1] == 'kml':
                         zfiledata = BytesIO(zipf.read(name2))
-                        print("Did we get here")
                         file = (zfiledata, name2)
                 zipf.close()
-            print("Before Calling converter")
             conv.Convert(file)
         else:
             raise ValueError("File Not Supported")
@@ -183,6 +180,7 @@ class Convert():
     def Convert(self, kml_file):
         #Should just do this before I call this method
         print("Start of the Convert")
+        print(kml_file)
         if not self.FileCheck(self.__file_name):
             print("Error in filecheck")
             return
